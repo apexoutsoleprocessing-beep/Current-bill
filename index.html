@@ -1,0 +1,360 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>কারেন্ট বিল ক্যালকুলেটর</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, "Noto Sans Bengali", sans-serif;
+    min-height: 100vh;
+    padding: 25px 15px;
+    background: linear-gradient(135deg, #071a52, #086972, #17b978);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+}
+
+.container {
+    width: 100%;
+    max-width: 430px;
+    padding: 26px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255,255,255,0.3);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    backdrop-filter: blur(14px);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.icon {
+    font-size: 48px;
+    margin-bottom: 8px;
+}
+
+h1 {
+    font-size: 25px;
+    margin-bottom: 8px;
+}
+
+.header p {
+    color: #d9fff2;
+    font-size: 14px;
+}
+
+label {
+    display: block;
+    margin: 17px 0 8px;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+input {
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    background: #fff;
+    color: #102a43;
+    font-size: 18px;
+    outline: none;
+}
+
+input:focus {
+    border-color: #42f5b3;
+}
+
+.rate-box {
+    margin-top: 18px;
+    padding: 14px;
+    background: rgba(0,0,0,0.18);
+    border-radius: 12px;
+}
+
+.rate-box label {
+    margin-top: 0;
+}
+
+.rate-box input {
+    padding: 11px;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: 0.2s;
+}
+
+.calculate {
+    background: linear-gradient(90deg, #42f5b3, #00d4ff);
+    color: #062c3b;
+}
+
+.calculate:active, .reset:active {
+    transform: scale(0.98);
+}
+
+.reset {
+    margin-top: 10px;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.35);
+}
+
+.result {
+    display: none;
+    margin-top: 22px;
+    padding: 20px;
+    border-radius: 16px;
+    background: #ffffff;
+    color: #153448;
+}
+
+.result h2 {
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.line {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid #e4edf2;
+    font-size: 15px;
+}
+
+.line strong {
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.total {
+    text-align: center;
+    margin-top: 18px;
+    padding: 17px 8px;
+    background: linear-gradient(135deg, #d7fff0, #d9f8ff);
+    border-radius: 12px;
+}
+
+.total p {
+    font-size: 14px;
+    color: #325a68;
+}
+
+.total h3 {
+    color: #007c59;
+    font-size: 30px;
+    margin-top: 7px;
+    overflow-wrap: anywhere;
+}
+
+.error {
+    display: none;
+    background: #ffe3e3;
+    color: #9d1111;
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 22px;
+    font-size: 12px;
+    color: #d8fff2;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <div class="icon">⚡</div>
+        <h1>কারেন্ট বিল ক্যালকুলেটর</h1>
+        <p>পুরোনো ও নতুন মিটারের রিডিং দিয়ে বিল হিসাব করো</p>
+    </div>
+
+    <label for="oldUnit">📘 পুরোনো ইউনিট (Old Unit)</label>
+    <input
+        type="number"
+        id="oldUnit"
+        placeholder="যেমন: 1200"
+        min="0"
+        step="any"
+        inputmode="decimal"
+    >
+
+    <label for="newUnit">📗 নতুন ইউনিট (New Unit)</label>
+    <input
+        type="number"
+        id="newUnit"
+        placeholder="যেমন: 1250"
+        min="0"
+        step="any"
+        inputmode="decimal"
+    >
+
+    <div class="rate-box">
+        <label for="rate">💰 প্রতি ইউনিটের দাম (টাকা)</label>
+        <input
+            type="number"
+            id="rate"
+            value="9.24"
+            min="0"
+            step="any"
+            inputmode="decimal"
+        >
+    </div>
+
+    <button class="calculate" onclick="calculateBill()">
+        ⚡ বিল হিসাব করো
+    </button>
+
+    <button class="reset" onclick="resetCalculator()">
+        ↻ নতুন করে হিসাব
+    </button>
+
+    <div class="error" id="error"></div>
+
+    <div class="result" id="result">
+        <h2>📊 তোমার বিলের হিসাব</h2>
+
+        <div class="line">
+            <span>পুরোনো রিডিং</span>
+            <strong id="showOld"></strong>
+        </div>
+
+        <div class="line">
+            <span>নতুন রিডিং</span>
+            <strong id="showNew"></strong>
+        </div>
+
+        <div class="line">
+            <span>মোট ব্যবহৃত ইউনিট</span>
+            <strong id="showUsed"></strong>
+        </div>
+
+        <div class="line">
+            <span>প্রতি ইউনিটের দাম</span>
+            <strong id="showRate"></strong>
+        </div>
+
+        <div class="total">
+            <p>সর্বমোট বিদ্যুৎ বিল</p>
+            <h3 id="showBill">৳ 0.00</h3>
+        </div>
+    </div>
+
+    <div class="footer">
+        তৈরি করা হয়েছে তোমার বিদ্যুৎ বিল হিসাবের জন্য ❤️
+    </div>
+
+</div>
+
+<script>
+function calculateBill() {
+    const oldValue = document.getElementById("oldUnit").value;
+    const newValue = document.getElementById("newUnit").value;
+    const rateValue = document.getElementById("rate").value;
+
+    const error = document.getElementById("error");
+    const result = document.getElementById("result");
+
+    error.style.display = "none";
+    result.style.display = "none";
+
+    if (
+        oldValue.trim() === "" ||
+        newValue.trim() === "" ||
+        rateValue.trim() === ""
+    ) {
+        showError("দয়া করে পুরোনো রিডিং, নতুন রিডিং এবং ইউনিটের দাম লিখো।");
+        return;
+    }
+
+    const oldUnit = Number(oldValue);
+    const newUnit = Number(newValue);
+    const rate = Number(rateValue);
+
+    if (
+        !Number.isFinite(oldUnit) ||
+        !Number.isFinite(newUnit) ||
+        !Number.isFinite(rate) ||
+        oldUnit < 0 ||
+        newUnit < 0 ||
+        rate < 0
+    ) {
+        showError("সঠিক ও শূন্যের সমান বা বড় সংখ্যা লিখো।");
+        return;
+    }
+
+    if (newUnit < oldUnit) {
+        showError("নতুন রিডিং পুরোনো রিডিংয়ের চেয়ে কম হতে পারবে না।");
+        return;
+    }
+
+    const usedUnit = newUnit - oldUnit;
+    const bill = usedUnit * rate;
+
+    document.getElementById("showOld").textContent =
+        oldUnit.toLocaleString("en-US");
+
+    document.getElementById("showNew").textContent =
+        newUnit.toLocaleString("en-US");
+
+    document.getElementById("showUsed").textContent =
+        usedUnit.toLocaleString("en-US") + " ইউনিট";
+
+    document.getElementById("showRate").textContent =
+        "৳ " + rate.toFixed(2);
+
+    document.getElementById("showBill").textContent =
+        "৳ " + bill.toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+    result.style.display = "block";
+}
+
+function showError(message) {
+    const error = document.getElementById("error");
+    error.textContent = message;
+    error.style.display = "block";
+}
+
+function resetCalculator() {
+    document.getElementById("oldUnit").value = "";
+    document.getElementById("newUnit").value = "";
+    document.getElementById("rate").value = "9.24";
+    document.getElementById("result").style.display = "none";
+    document.getElementById("error").style.display = "none";
+}
+</script>
+
+</body>
+</html>
