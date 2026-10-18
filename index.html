@@ -109,7 +109,7 @@ button {
     color: #062c3b;
 }
 
-.calculate:active, .reset:active {
+.calculate:active, .reset:active, .download:active {
     transform: scale(0.98);
 }
 
@@ -185,6 +185,75 @@ button {
     font-size: 12px;
     color: #d8fff2;
 }
+
+/* নতুন রিসিট ডাউনলোড বাটন */
+.download {
+    display: none;
+    background: linear-gradient(90deg, #ffe259, #ffa751);
+    color: #402600;
+    margin-top: 12px;
+}
+
+/* ডাউনলোডের জন্য আলাদা রিসিট */
+#receipt {
+    position: fixed;
+    left: -10000px;
+    top: 0;
+    width: 360px;
+    padding: 24px;
+    background: white;
+    color: #153448;
+    font-family: Arial, "Noto Sans Bengali", sans-serif;
+}
+
+#receipt h2 {
+    text-align: center;
+    margin-bottom: 8px;
+    font-size: 23px;
+}
+
+#receipt .subtitle {
+    text-align: center;
+    color: #55717c;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+#receipt .receipt-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 0;
+    border-bottom: 1px solid #dce7eb;
+    font-size: 14px;
+}
+
+#receipt .receipt-line strong {
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+#receipt .receipt-total {
+    text-align: center;
+    background: #d7fff0;
+    padding: 18px 8px;
+    border-radius: 12px;
+    margin-top: 20px;
+}
+
+#receipt .receipt-total strong {
+    display: block;
+    font-size: 27px;
+    color: #007c59;
+    margin-top: 8px;
+}
+
+#receipt .receipt-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 12px;
+    color: #55717c;
+}
 </style>
 </head>
 
@@ -199,35 +268,17 @@ button {
     </div>
 
     <label for="oldUnit">📘 পুরোনো ইউনিট (Old Unit)</label>
-    <input
-        type="number"
-        id="oldUnit"
-        placeholder="যেমন: 1200"
-        min="0"
-        step="any"
-        inputmode="decimal"
-    >
+    <input type="number" id="oldUnit" placeholder="যেমন: 1200"
+           min="0" step="any" inputmode="decimal">
 
     <label for="newUnit">📗 নতুন ইউনিট (New Unit)</label>
-    <input
-        type="number"
-        id="newUnit"
-        placeholder="যেমন: 1250"
-        min="0"
-        step="any"
-        inputmode="decimal"
-    >
+    <input type="number" id="newUnit" placeholder="যেমন: 1250"
+           min="0" step="any" inputmode="decimal">
 
     <div class="rate-box">
         <label for="rate">💰 প্রতি ইউনিটের দাম (টাকা)</label>
-        <input
-            type="number"
-            id="rate"
-            value="9.24"
-            min="0"
-            step="any"
-            inputmode="decimal"
-        >
+        <input type="number" id="rate" value="9.24"
+               min="0" step="any" inputmode="decimal">
     </div>
 
     <button class="calculate" onclick="calculateBill()">
@@ -269,13 +320,57 @@ button {
         </div>
     </div>
 
+    <!-- নতুন ডাউনলোড বাটন -->
+    <button class="download" id="downloadBtn" onclick="downloadReceipt()">
+        📥 রিসিট ডাউনলোড করো
+    </button>
+
     <div class="footer">
         তৈরি করা হয়েছে তোমার বিদ্যুৎ বিল হিসাবের জন্য ❤️
     </div>
-
 </div>
 
+<!-- ডাউনলোডের জন্য রিসিট টেমপ্লেট -->
+<div id="receipt">
+    <h2>⚡ বিদ্যুৎ বিলের রিসিট</h2>
+    <p class="subtitle">কারেন্ট বিল ক্যালকুলেটর</p>
+
+    <div class="receipt-line">
+        <span>পুরোনো রিডিং</span>
+        <strong id="rOld"></strong>
+    </div>
+
+    <div class="receipt-line">
+        <span>নতুন রিডিং</span>
+        <strong id="rNew"></strong>
+    </div>
+
+    <div class="receipt-line">
+        <span>ব্যবহৃত ইউনিট</span>
+        <strong id="rUsed"></strong>
+    </div>
+
+    <div class="receipt-line">
+        <span>প্রতি ইউনিটের দাম</span>
+        <strong id="rRate"></strong>
+    </div>
+
+    <div class="receipt-total">
+        মোট বিদ্যুৎ বিল
+        <strong id="rBill"></strong>
+    </div>
+
+    <p class="receipt-footer">
+        এই রিসিটটি ইউনিট × প্রতি ইউনিটের দামের ভিত্তিতে তৈরি।
+    </p>
+</div>
+
+<!-- রিসিটকে ছবিতে রূপান্তরের লাইব্রেরি -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <script>
+let currentBillData = null;
+
 function calculateBill() {
     const oldValue = document.getElementById("oldUnit").value;
     const newValue = document.getElementById("newUnit").value;
@@ -283,16 +378,17 @@ function calculateBill() {
 
     const error = document.getElementById("error");
     const result = document.getElementById("result");
+    const downloadBtn = document.getElementById("downloadBtn");
 
     error.style.display = "none";
     result.style.display = "none";
+    downloadBtn.style.display = "none";
+    currentBillData = null;
 
-    if (
-        oldValue.trim() === "" ||
+    if (oldValue.trim() === "" ||
         newValue.trim() === "" ||
-        rateValue.trim() === ""
-    ) {
-        showError("দয়া করে পুরোনো রিডিং, নতুন রিডিং এবং ইউনিটের দাম লিখো।");
+        rateValue.trim() === "") {
+        showError("দয়া করে সব ঘরে সঠিক তথ্য লিখো।");
         return;
     }
 
@@ -300,14 +396,10 @@ function calculateBill() {
     const newUnit = Number(newValue);
     const rate = Number(rateValue);
 
-    if (
-        !Number.isFinite(oldUnit) ||
+    if (!Number.isFinite(oldUnit) ||
         !Number.isFinite(newUnit) ||
         !Number.isFinite(rate) ||
-        oldUnit < 0 ||
-        newUnit < 0 ||
-        rate < 0
-    ) {
+        oldUnit < 0 || newUnit < 0 || rate < 0) {
         showError("সঠিক ও শূন্যের সমান বা বড় সংখ্যা লিখো।");
         return;
     }
@@ -319,6 +411,8 @@ function calculateBill() {
 
     const usedUnit = newUnit - oldUnit;
     const bill = usedUnit * rate;
+
+    currentBillData = { oldUnit, newUnit, usedUnit, rate, bill };
 
     document.getElementById("showOld").textContent =
         oldUnit.toLocaleString("en-US");
@@ -338,7 +432,27 @@ function calculateBill() {
             maximumFractionDigits: 2
         });
 
+    // রিসিটে একই হিসাব বসানো
+    document.getElementById("rOld").textContent =
+        oldUnit.toLocaleString("en-US");
+
+    document.getElementById("rNew").textContent =
+        newUnit.toLocaleString("en-US");
+
+    document.getElementById("rUsed").textContent =
+        usedUnit.toLocaleString("en-US") + " ইউনিট";
+
+    document.getElementById("rRate").textContent =
+        "৳ " + rate.toFixed(2);
+
+    document.getElementById("rBill").textContent =
+        "৳ " + bill.toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
     result.style.display = "block";
+    downloadBtn.style.display = "block";
 }
 
 function showError(message) {
@@ -347,14 +461,54 @@ function showError(message) {
     error.style.display = "block";
 }
 
+async function downloadReceipt() {
+    if (!currentBillData) {
+        showError("আগে বিল হিসাব করো।");
+        return;
+    }
+
+    if (typeof html2canvas === "undefined") {
+        showError("রিসিট তৈরির জন্য ইন্টারনেট চালু করে আবার চেষ্টা করো।");
+        return;
+    }
+
+    const button = document.getElementById("downloadBtn");
+    button.disabled = true;
+    button.textContent = "⏳ রিসিট তৈরি হচ্ছে...";
+
+    try {
+        const canvas = await html2canvas(
+            document.getElementById("receipt"),
+            {
+                backgroundColor: "#ffffff",
+                scale: 2,
+                useCORS: true
+            }
+        );
+
+        const link = document.createElement("a");
+        link.download = "Current-Bill-Receipt.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    } catch (e) {
+        showError("রিসিট ডাউনলোড করা যায়নি। আবার চেষ্টা করো।");
+    } finally {
+        button.disabled = false;
+        button.textContent = "📥 রিসিট ডাউনলোড করো";
+    }
+}
+
 function resetCalculator() {
     document.getElementById("oldUnit").value = "";
     document.getElementById("newUnit").value = "";
     document.getElementById("rate").value = "9.24";
     document.getElementById("result").style.display = "none";
     document.getElementById("error").style.display = "none";
+    document.getElementById("downloadBtn").style.display = "none";
+    currentBillData = null;
 }
 </script>
 
 </body>
-</html>
+                </html>
+    
