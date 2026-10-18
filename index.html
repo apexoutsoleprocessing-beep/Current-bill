@@ -29,7 +29,7 @@ body {
     max-width: 430px;
     padding: 26px;
     border-radius: 24px;
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255,255,255,0.12);
     border: 1px solid rgba(255,255,255,0.3);
     box-shadow: 0 15px 40px rgba(0,0,0,0.3);
     backdrop-filter: blur(14px);
@@ -69,7 +69,7 @@ input {
     border: 2px solid transparent;
     background: #fff;
     color: #102a43;
-    font-size: 18px;
+    font-size: 17px;
     outline: none;
 }
 
@@ -104,13 +104,18 @@ button {
     transition: 0.2s;
 }
 
+button:active {
+    transform: scale(0.98);
+}
+
+button:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
 .calculate {
     background: linear-gradient(90deg, #42f5b3, #00d4ff);
     color: #062c3b;
-}
-
-.calculate:active, .reset:active, .download:active {
-    transform: scale(0.98);
 }
 
 .reset {
@@ -125,7 +130,7 @@ button {
     margin-top: 22px;
     padding: 20px;
     border-radius: 16px;
-    background: #ffffff;
+    background: #fff;
     color: #153448;
 }
 
@@ -141,7 +146,7 @@ button {
     gap: 12px;
     padding: 11px 0;
     border-bottom: 1px solid #e4edf2;
-    font-size: 15px;
+    font-size: 14px;
 }
 
 .line strong {
@@ -186,7 +191,6 @@ button {
     color: #d8fff2;
 }
 
-/* নতুন রিসিট ডাউনলোড বাটন */
 .download {
     display: none;
     background: linear-gradient(90deg, #ffe259, #ffa751);
@@ -194,7 +198,6 @@ button {
     margin-top: 12px;
 }
 
-/* ডাউনলোডের জন্য আলাদা রিসিট */
 #receipt {
     position: fixed;
     left: -10000px;
@@ -246,6 +249,7 @@ button {
     font-size: 27px;
     color: #007c59;
     margin-top: 8px;
+    overflow-wrap: anywhere;
 }
 
 #receipt .receipt-footer {
@@ -264,24 +268,52 @@ button {
     <div class="header">
         <div class="icon">⚡</div>
         <h1>কারেন্ট বিল ক্যালকুলেটর</h1>
-        <p>পুরোনো ও নতুন মিটারের রিডিং দিয়ে বিল হিসাব করো</p>
+        <p>মালিকের নাম ও মিটারের রিডিং দিয়ে বিল হিসাব করো</p>
     </div>
 
+    <label for="ownerName">👤 Owner Name (মালিকের নাম)</label>
+    <input
+        type="text"
+        id="ownerName"
+        placeholder="যেমন: Rahim Mia"
+        maxlength="100"
+        autocomplete="name"
+    >
+
     <label for="oldUnit">📘 পুরোনো ইউনিট (Old Unit)</label>
-    <input type="number" id="oldUnit" placeholder="যেমন: 1200"
-           min="0" step="any" inputmode="decimal">
+    <input
+        type="number"
+        id="oldUnit"
+        placeholder="যেমন: 1200"
+        min="0"
+        step="any"
+        inputmode="decimal"
+    >
 
     <label for="newUnit">📗 নতুন ইউনিট (New Unit)</label>
-    <input type="number" id="newUnit" placeholder="যেমন: 1250"
-           min="0" step="any" inputmode="decimal">
+    <input
+        type="number"
+        id="newUnit"
+        placeholder="যেমন: 1250"
+        min="0"
+        step="any"
+        inputmode="decimal"
+    >
 
     <div class="rate-box">
         <label for="rate">💰 প্রতি ইউনিটের দাম (টাকা)</label>
-        <input type="number" id="rate" value="9.24"
-               min="0" step="any" inputmode="decimal">
+        <input
+            type="number"
+            id="rate"
+            value="9.24"
+            min="0"
+            step="any"
+            inputmode="decimal"
+        >
     </div>
 
-    <button class="calculate" onclick="calculateBill()">
+    <button class="calculate" id="calculateBtn"
+        onclick="calculateBill()">
         ⚡ বিল হিসাব করো
     </button>
 
@@ -289,10 +321,15 @@ button {
         ↻ নতুন করে হিসাব
     </button>
 
-    <div class="error" id="error"></div>
+    <div class="error" id="error" role="alert"></div>
 
     <div class="result" id="result">
         <h2>📊 তোমার বিলের হিসাব</h2>
+
+        <div class="line">
+            <span>মালিকের নাম</span>
+            <strong id="showOwner"></strong>
+        </div>
 
         <div class="line">
             <span>পুরোনো রিডিং</span>
@@ -320,8 +357,8 @@ button {
         </div>
     </div>
 
-    <!-- নতুন ডাউনলোড বাটন -->
-    <button class="download" id="downloadBtn" onclick="downloadReceipt()">
+    <button class="download" id="downloadBtn"
+        onclick="downloadReceipt()">
         📥 রিসিট ডাউনলোড করো
     </button>
 
@@ -330,10 +367,15 @@ button {
     </div>
 </div>
 
-<!-- ডাউনলোডের জন্য রিসিট টেমপ্লেট -->
+<!-- রিসিট টেমপ্লেট -->
 <div id="receipt">
     <h2>⚡ বিদ্যুৎ বিলের রিসিট</h2>
     <p class="subtitle">কারেন্ট বিল ক্যালকুলেটর</p>
+
+    <div class="receipt-line">
+        <span>মালিকের নাম</span>
+        <strong id="rOwner"></strong>
+    </div>
 
     <div class="receipt-line">
         <span>পুরোনো রিডিং</span>
@@ -361,17 +403,38 @@ button {
     </div>
 
     <p class="receipt-footer">
-        এই রিসিটটি ইউনিট × প্রতি ইউনিটের দামের ভিত্তিতে তৈরি।
+        এই রিসিটটি ব্যবহৃত ইউনিট × প্রতি ইউনিটের দামের ভিত্তিতে তৈরি।
     </p>
 </div>
 
-<!-- রিসিটকে ছবিতে রূপান্তরের লাইব্রেরি -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
 let currentBillData = null;
 
+function formatNumber(value) {
+    return value.toLocaleString("en-US", {
+        maximumFractionDigits: 6
+    });
+}
+
+function formatMoney(value) {
+    return value.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+function showError(message) {
+    const error = document.getElementById("error");
+    error.textContent = message;
+    error.style.display = "block";
+}
+
 function calculateBill() {
+    const ownerName =
+        document.getElementById("ownerName").value.trim();
+
     const oldValue = document.getElementById("oldUnit").value;
     const newValue = document.getElementById("newUnit").value;
     const rateValue = document.getElementById("rate").value;
@@ -385,10 +448,12 @@ function calculateBill() {
     downloadBtn.style.display = "none";
     currentBillData = null;
 
-    if (oldValue.trim() === "" ||
+    if (
+        oldValue.trim() === "" ||
         newValue.trim() === "" ||
-        rateValue.trim() === "") {
-        showError("দয়া করে সব ঘরে সঠিক তথ্য লিখো।");
+        rateValue.trim() === ""
+    ) {
+        showError("দয়া করে পুরোনো রিডিং, নতুন রিডিং ও ইউনিটের দাম লিখো।");
         return;
     }
 
@@ -396,11 +461,15 @@ function calculateBill() {
     const newUnit = Number(newValue);
     const rate = Number(rateValue);
 
-    if (!Number.isFinite(oldUnit) ||
+    if (
+        !Number.isFinite(oldUnit) ||
         !Number.isFinite(newUnit) ||
         !Number.isFinite(rate) ||
-        oldUnit < 0 || newUnit < 0 || rate < 0) {
-        showError("সঠিক ও শূন্যের সমান বা বড় সংখ্যা লিখো।");
+        oldUnit < 0 ||
+        newUnit < 0 ||
+        rate < 0
+    ) {
+        showError("দয়া করে শূন্য বা তার বেশি সঠিক সংখ্যা লিখো।");
         return;
     }
 
@@ -412,53 +481,60 @@ function calculateBill() {
     const usedUnit = newUnit - oldUnit;
     const bill = usedUnit * rate;
 
-    currentBillData = { oldUnit, newUnit, usedUnit, rate, bill };
+    if (!Number.isFinite(bill)) {
+        showError("হিসাবের সংখ্যা অনেক বড়। সঠিক রিডিং লিখো।");
+        return;
+    }
+
+    currentBillData = {
+        ownerName: ownerName || "নাম দেওয়া হয়নি",
+        oldUnit,
+        newUnit,
+        usedUnit,
+        rate,
+        bill
+    };
+
+    // স্ক্রিনে হিসাব দেখানো
+    document.getElementById("showOwner").textContent =
+        currentBillData.ownerName;
 
     document.getElementById("showOld").textContent =
-        oldUnit.toLocaleString("en-US");
+        formatNumber(oldUnit);
 
     document.getElementById("showNew").textContent =
-        newUnit.toLocaleString("en-US");
+        formatNumber(newUnit);
 
     document.getElementById("showUsed").textContent =
-        usedUnit.toLocaleString("en-US") + " ইউনিট";
+        formatNumber(usedUnit) + " ইউনিট";
 
     document.getElementById("showRate").textContent =
-        "৳ " + rate.toFixed(2);
+        "৳ " + formatMoney(rate);
 
     document.getElementById("showBill").textContent =
-        "৳ " + bill.toLocaleString("en-US", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+        "৳ " + formatMoney(bill);
 
-    // রিসিটে একই হিসাব বসানো
+    // একই তথ্য রিসিটে বসানো
+    document.getElementById("rOwner").textContent =
+        currentBillData.ownerName;
+
     document.getElementById("rOld").textContent =
-        oldUnit.toLocaleString("en-US");
+        formatNumber(oldUnit);
 
     document.getElementById("rNew").textContent =
-        newUnit.toLocaleString("en-US");
+        formatNumber(newUnit);
 
     document.getElementById("rUsed").textContent =
-        usedUnit.toLocaleString("en-US") + " ইউনিট";
+        formatNumber(usedUnit) + " ইউনিট";
 
     document.getElementById("rRate").textContent =
-        "৳ " + rate.toFixed(2);
+        "৳ " + formatMoney(rate);
 
     document.getElementById("rBill").textContent =
-        "৳ " + bill.toLocaleString("en-US", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+        "৳ " + formatMoney(bill);
 
     result.style.display = "block";
     downloadBtn.style.display = "block";
-}
-
-function showError(message) {
-    const error = document.getElementById("error");
-    error.textContent = message;
-    error.style.display = "block";
 }
 
 async function downloadReceipt() {
@@ -473,42 +549,51 @@ async function downloadReceipt() {
     }
 
     const button = document.getElementById("downloadBtn");
+    const originalText = button.textContent;
+
     button.disabled = true;
     button.textContent = "⏳ রিসিট তৈরি হচ্ছে...";
 
     try {
-        const canvas = await html2canvas(
-            document.getElementById("receipt"),
-            {
-                backgroundColor: "#ffffff",
-                scale: 2,
-                useCORS: true
-            }
-        );
+        const receipt = document.getElementById("receipt");
+
+        const canvas = await html2canvas(receipt, {
+            backgroundColor: "#ffffff",
+            scale: 2,
+            useCORS: true
+        });
 
         const link = document.createElement("a");
-        link.download = "Current-Bill-Receipt.png";
+        const safeName = currentBillData.ownerName
+            .replace(/[\\/:*?"<>|]/g, "_")
+            .replace(/\s+/g, "-")
+            .slice(0, 50);
+
+        link.download = "Current-Bill-" + safeName + ".png";
         link.href = canvas.toDataURL("image/png");
         link.click();
     } catch (e) {
         showError("রিসিট ডাউনলোড করা যায়নি। আবার চেষ্টা করো।");
     } finally {
         button.disabled = false;
-        button.textContent = "📥 রিসিট ডাউনলোড করো";
+        button.textContent = originalText;
     }
 }
 
 function resetCalculator() {
+    document.getElementById("ownerName").value = "";
     document.getElementById("oldUnit").value = "";
     document.getElementById("newUnit").value = "";
     document.getElementById("rate").value = "9.24";
+
     document.getElementById("result").style.display = "none";
     document.getElementById("error").style.display = "none";
     document.getElementById("downloadBtn").style.display = "none";
+
     currentBillData = null;
 }
 </script>
 
 </body>
-                </html>
-    
+        </html>
+                               
